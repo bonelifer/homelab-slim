@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a problem with slim-image.sh or a profile
+labels: ["bug"]
+body:
+  - type: input
+    id: profile
+    attributes:
+      label: Profile
+      placeholder: somafm
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: The command you ran, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: The slim-image.sh output and any diff it printed. Remove secrets first.
+      render: text
