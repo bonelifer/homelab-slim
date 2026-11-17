@@ -22,12 +22,14 @@ import time
 import urllib.request
 from pathlib import Path
 
+
 # Stream types the radio bridges hand MPD. SomaFM is fixed; iHeart and
 # TuneIn URLs come from the live bridges' read-only lookups. Pandora is
 # left out: its account allows one stream at a time, so a test stream
 # could cut off real listening (its stream is plain HTTP MP3, as SomaFM's
 # http:// one below). iBroadcast's bridge serves HTTP MP3 tracks.
 def streams() -> list[tuple[str, str]]:
+    """Return (label, URL) pairs for each radio stream type to play."""
     found = [("somafm https mp3", "https://ice1.somafm.com/groovesalad-128-mp3"),
              ("somafm http aac", "http://ice1.somafm.com/groovesalad-128-aac")]
     for label, base in (("iheart", "http://127.0.0.1:18767"),
@@ -48,6 +50,7 @@ def streams() -> list[tuple[str, str]]:
         print("ibroadcast: bridge lookup failed, stream skipped", flush=True)
     return found
 
+
 UPDATE_DIRS = ("library/explo", "library/Kris Kristofferson/Kristofferson (2010)")
 
 
@@ -62,8 +65,8 @@ class Mpd:
 
     def call(self, *args: str) -> tuple[str, list[tuple[str, str]]]:
         """Send one command; return ("OK" or the ACK text, key/value pairs)."""
-        line = " ".join([args[0]] + ['"' + a.replace("\\", "\\\\").replace('"', '\\"') + '"'
-                                      for a in args[1:]])
+        quoted = ['"' + a.replace("\\", "\\\\").replace('"', '\\"') + '"' for a in args[1:]]
+        line = " ".join([args[0]] + quoted)
         self.file.write(line.encode() + b"\n")
         self.file.flush()
         pairs = []
