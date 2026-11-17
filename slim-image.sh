@@ -199,10 +199,12 @@ cmd_build() {
         [[ -z "$CONTAINER" ]] && sleep 1
     done
     log "Target container: $CONTAINER"
-    # mint leaves the target's artifact volume (a copy of every kept file)
-    # behind; note it so it can be removed afterwards.
-    local artifacts
-    artifacts="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/opt/_mint/artifacts"}}{{.Name}}{{end}}{{end}}' "$CONTAINER")"
+    # mint leaves the target's anonymous volumes behind: its artifact volume
+    # (a copy of every kept file) and one per VOLUME the image declares.
+    # Note their names (64 hex characters; named volumes such as mint's
+    # sensor volume are kept) so they can be removed afterwards.
+    local volumes
+    volumes="$(docker inspect -f '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}}{{"\n"}}{{end}}{{end}}' "$CONTAINER" | grep -xE '[0-9a-f]{64}' || true)"
 
     local status=0
     if wait_for_ready; then
@@ -218,17 +220,18 @@ cmd_build() {
     docker logs "$mint_name" 2>&1 | grep -vE '^cmd=slim info=(container.logs|probe)' | tail -n 25 >&2
     # -v also removes mint's anonymous state volume (another copy of the files).
     docker rm -v "$mint_name" >/dev/null
-    if [[ -n "$artifacts" ]]; then
-        # mint removes the target container shortly after it exits.
-        local tries=0
-        until docker volume rm "$artifacts" >/dev/null 2>&1 || ! docker volume inspect "$artifacts" >/dev/null 2>&1; do
+    # mint removes the target container shortly after it exits.
+    local volume tries
+    for volume in $volumes; do
+        tries=0
+        until docker volume rm "$volume" >/dev/null 2>&1 || ! docker volume inspect "$volume" >/dev/null 2>&1; do
             if ((++tries > 15)); then
-                log "Could not remove mint volume $artifacts; remove it by hand"
+                log "Could not remove mint volume $volume; remove it by hand"
                 break
             fi
             sleep 2
         done
-    fi
+    done
     if ((status == 0)) && ! audit_image; then
         status=1
     fi
