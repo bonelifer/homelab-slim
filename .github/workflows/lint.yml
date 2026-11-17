@@ -17,8 +17,11 @@ jobs:
       - uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.x"
+      # SC2329 ("never invoked") is excluded because slim-image.sh calls its
+      # cmd_* functions and the profiles' hooks by name; the others because
+      # profiles are sourced fragments whose variables the script reads.
       - name: shellcheck
-        run: shellcheck -s bash -e SC2154,SC2034,SC1091 slim-image.sh tools/test-mpd.sh profiles/*.conf profiles/*.sh
+        run: shellcheck -s bash -e SC2154,SC2034,SC1091,SC2329 slim-image.sh tools/test-mpd.sh profiles/*.conf profiles/*.sh
       - name: flake8
         run: python -m pip install flake8 && python -m flake8 --max-line-length 100 tools/*.py profiles/*.py tests/*.py
       - name: Offline tests
