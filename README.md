@@ -68,6 +68,7 @@ lists the settings and functions a profile can define.
 | deemix | every API route, login, one real download | cannot be built: see below |
 | mpd-alsa | plugin lists, database update, tags, art, fingerprints, MP3/M4A and every radio stream type, HTTP stream, playlists, stickers | second MPD on ports 6612/8012; plays to a null output, PulseAudio output created but off |
 | beets | the nightly job, mpdstats, update, autobpm, keyfinder, missing, duplicates, export | waits for the stack's first analysis pass; fresh library of copied files |
+| download-check | every review page and list, audio streaming with byte ranges, theme, approve and re-check, one pass over copied folders against the real MusicBrainz, the command line | needs network for MusicBrainz; a fake MPD refuses the rescan requests; Gotify alerts not tested |
 
 ## Images that are not slimmed
 
